@@ -1,0 +1,122 @@
+# WaterQuality
+# Use the Water quality dataset to find sources of contamination in the
+#data: Perform EDA and find which attribute(s) contribute the most to the
+#contamination of water.
+
+import pandas as pd
+import numpy as np
+
+# loading the dataset of water quality in excel named as project
+file_path = 'project.xlsx'
+data = pd.read_excel(file_path)
+
+#Understanding dataset
+data.head()
+
+#knowing the number of rows and columns    
+print(data.shape)
+
+#understanding the data types columns and values of datasets in details 
+data.info()
+
+#Cleaning the data 
+import pandas as pd
+import re
+
+# Remove the different characters, like stickers, from the column name.
+data.columns = [re.sub(r'[\W_]+', ' ', col).strip() for col in data.columns]
+
+# Remove the different characters, like stickers, from a particular column.
+data['LOCATIONS'] = data['LOCATIONS'].apply(lambda x: re.sub(r'[\W_]+', ' ', str(x)).strip() if pd.notnull(x) else x)
+
+# This for loop helps the columns of the whole dataset to standardized in title string using pandas
+for col in data.select_dtypes(include='object').columns:
+    data[col] = data[col].str.title()
+
+#checking the changes
+data.columns
+
+data.columns = data.columns.str.replace(' ', '_')
+
+#checking the changes
+data.columns
+
+data['STATE'] = data['STATE'].replace({'Tamilnadu': 'Tamil Nadu'})
+
+data.head
+
+#Handling missing vales
+
+data.isna().sum()
+
+# Fill null values with mode
+for column in data.columns:
+    mode_value = data[column].mode()[0]  
+    data[column].fillna(mode_value, inplace=True)
+
+# Now, df has no null values where each NaN is replaced by the mode of its column
+
+#checking for changes
+data.info()
+
+# List of columns to exclude
+columns_to_exclude = ['LOCATIONS','STATE']  
+
+# Drop the specified columns
+data_filtered = data.drop(columns=columns_to_exclude)
+
+# Calculate the correlation matrix for the remaining columns
+correlation_matrix = data_filtered.corr()
+
+#USING CORRELATION TO FIND THE RELATIONSHIP BETWEEN THE VARIABLES AFFECTING WATER QUALITY
+
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+# Plot heatmap of the correlation matrix
+plt.figure(figsize=(12, 10))
+sns.heatmap(correlation_matrix, annot=True, cmap="coolwarm", fmt=".2f")
+plt.title("Correlation Matrix (Excluding Specific Columns)")
+plt.show()
+
+#Attributes with low correlation (close to 0) to contamination indicators are less 
+#likely to influence contamination directly.
+
+#Also, BOD shows a positive correlation with Fecal Coliform, Total Coliform, 
+#and Nitrate levels, conclude that organic waste is a key contributor to microbial contamination.
+
+
+#PLOTTING TO SHOW THE SPECIFIC RELATIONSHIP BETWEEN TWO VARIABLES HAVING ANY CORRELATION
+
+#If DO shows a strong negative correlation with contaminants like BOD or coliforms,
+#it implies that contamination reduces oxygen levels, possibly due to microbial activity.
+
+sns.relplot(x="D_O_mg_l_Mean_4_mg_l",y="B_O_D_mg_l_Mean_3_mg_l",data=data)
+plt.show()
+
+#here DO have a negative correlation with BOD which states a reduction in oxygen leading to microbial activity
+
+#High correlation between Fecal Coliform and Total Coliform might indicate similar sources of microbial contamination.
+
+sns.relplot(x="FECAL_COLIFORM_MPN_100ml_Mean_2500_MPN_100ml",y="TOTAL_COLIFORM_MPN_100ml_Mean_5000_MPN_100ml",data=data)
+plt.show()
+
+#this data shows a slight positive correlation between them. 
+
+Here, we can see a moderately strong correlation between Fecal and Total Coliforms, which indicates similar sources of microbial contamination.
+
+REPORT OF THE WATER QUALTIY PROJECT
+
+Overall Report for the test Water quality is primarily influenced by a combination of variables, many of which are highly interrelated. Notably:
+
+Temperature shows a strong correlation with fecal coliform and total coliform levels.
+
+Dissolved Oxygen (D.O.) is closely linked to biochemical oxygen demand (B.O.D.).
+
+Conductivity, pH, and nitrate values appear to have minimal influence on other variables. However, the pH value remains an important factor for assessing water quality, as it plays a neutral role in this dataset.
+
+The overall analysis indicates that water quality is good across all states. 
+Since the dataset lacks a specific dependent variable representing water quality, 
+all variables contribute significantly to the assessment.
+ However, it cannot be conclusively determined that any single variable alone is the definitive 
+ factor affecting water quality.
